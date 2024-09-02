@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}Add Task{% endblock %}
+
+{% block content %}
+<div class="container mt-5">
+    {% if user.is_authenticated %}
+        <h1>Add Task</h1>
+        <br>
+        <div class="form-group">
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-info">Post</button>
+            </form>
+        </div>
+        <script>
+            document.addEventListener('DOMContentLoaded', function() {
+                var departmentField = document.getElementById("department");
+                var userDepartment = "{{ user.profile.department.id }}";
+                departmentField.value = userDepartment;
+            });
+        </script>
+    {% else %}
+        <h2>Login to create a task :)</h2>
+    {% endif %}
+</div>
+{% endblock %}

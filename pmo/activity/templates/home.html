@@ -1,0 +1,96 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<h1>Tasks List:</h1>
+<br><br>
+
+{% if user.is_authenticated %}
+    <!-- Check if the user is a manager -->
+    {% if user.profile.is_manager %}
+        <!-- Search form, available to all managers -->
+        <form method="GET" action="{% url 'home' %}" class="form-group">
+            <!-- Input field for searching tasks by username -->
+            <input class="form-control" type="text" name="search" placeholder="Search by username" value="{{ query }}">
+            <br>
+            <!-- Submit button for the search form -->
+            <button type="submit" class="btn btn-info">Search</button>
+        </form>
+        <hr>
+        <br>
+        <!-- Add Sorting Links, available to all managers -->
+        <div class="sort-links">
+            <a href="?sort_by=task{% if query %}&search={{ query }}{% endif %}" class="text-success">Sort by Task</a> |
+            <a href="?sort_by=user__username{% if query %}&search={{ query }}{% endif %}" class="text-success">Sort by User</a> |
+            <a href="?sort_by=start_date{% if query %}&search={{ query }}{% endif %}" class="text-success">Sort by Date</a>
+        </div>
+        <br>
+    {% endif %}
+
+    {% if page_obj %}
+        <div>
+            <!-- Task list table -->
+            <table class="table">
+                <thead class="thead-dark">
+                    <tr>
+                        <!-- Table headers -->
+                        <th scope="col">Task#</th>
+                        <th scope="col">Task</th>
+                        <th scope="col">Created By</th>
+                        {% if user.profile.is_manager %}
+                            <th scope="col">Actions</th>
+                        {% endif %}
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Loop through the tasks in the current page (provided by pagination) -->
+                    {% for task in page_obj %}
+                        <tr>
+                            <!-- Display task details -->
+                            <th scope="row">{{ forloop.counter }}</th>
+                            <td>{{ task.task }}</td>
+                            <td>{{ task.user.username }}</td>
+                            {% if user.profile.is_manager %}
+                                <td>
+                                    <!-- Links to edit or delete the task -->
+                                    <a href="{% url 'edit_task' task.id %}" class="text-warning">Edit</a> -
+                                    <a href="{% url 'delete_task' task.id %}" class="text-warning">Delete</a>
+                                </td>
+                            {% endif %}
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <hr>
+            <!-- Pagination controls -->
+            <div class="pagination">
+                <span class="step-links">
+                    {% if page_obj.has_previous %}
+                        <!-- Link to the first page -->
+                        <a href="?page=1{% if query %}&search={{ query }}{% endif %}" class="text-success"><< first</a>
+                        <!-- Link to the previous page -->
+                        <a href="?page={{ page_obj.previous_page_number }}{% if query %}&search={{ query }}{% endif %}" class="text-success">< previous</a>
+                    {% endif %}
+
+                    <span class="current">
+                        <!-- Display the current page number and total pages -->
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}.
+                    </span>
+
+                    {% if page_obj.has_next %}
+                        <!-- Link to the next page -->
+                        <a href="?page={{ page_obj.next_page_number }}{% if query %}&search={{ query }}{% endif %}" class="text-success">next></a>
+                        <!-- Link to the last page -->
+                        <a href="?page={{ page_obj.paginator.num_pages }}{% if query %}&search={{ query }}{% endif %}" class="text-success">last >></a>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+    <br>
+    <br>
+    {% else %}
+        <p>No tasks.</p>
+    {% endif %}
+{% else %}
+    <p>Please log in to see your tasks.</p>
+{% endif %}
+{% endblock %}
